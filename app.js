@@ -29,13 +29,6 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // must be true in prod
-    sameSite: "None",                              // required for cross-domain
-    maxAge: 7 * 24 * 60 * 60 * 1000
-});
-
 app.use(fileUpload({
     useTempFiles: true,
     tempFileDir: "/temp/"
