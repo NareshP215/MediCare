@@ -59,10 +59,14 @@ const AddNewDoctor = () => {
       formData.append("docAvatar", docAvatar);
 
       await axios
-        .post("http://localhost:4000/api/v1/user/docter/addnew", formData, {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        })
+        .post(
+          "https://medicare-r4rk.onrender.com/api/v1/user/docter/addnew",
+          formData,
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        )
         .then((res) => {
           toast.success(res.data.message);
           setIsAuthenticated(true);

@@ -55,18 +55,21 @@ export default function Model() {
 
     try {
       // First get AI prediction
-      const res = await fetch("http://localhost:5000/predict-json", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ symptoms }),
-      });
+      const res = await fetch(
+        "https://diseasepredictionapp1.onrender.com/predict-json",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symptoms }),
+        }
+      );
 
       const aiData = await res.json();
       setResult(aiData);
 
       // Then send checkup form with AI prediction data
       await axios.post(
-        "http://localhost:4000/api/v1/checkup/send",
+        "https://medicare-r4rk.onrender.com/api/v1/checkup/send",
         { fullName, gender, age, phone, email, symptoms, aiPrediction: aiData },
         {
           withCredentials: true,
@@ -104,10 +107,13 @@ export default function Model() {
     setStatus("");
 
     try {
-      const res = await fetch("http://localhost:5000/measure-ecg", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await fetch(
+        "https://diseasepredictionapp1.onrender.com/measure-ecg",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       const data = await res.json();
 
       setAllValues(data.all_values || []);

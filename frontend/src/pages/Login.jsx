@@ -15,25 +15,26 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await axios
-        .post(
-          "http://localhost:4000/api/v1/user/login",
-          { email, password, confirmPassword, role: "Patient" },
-          {
-            withCredentials: true,
-            headers: { "Content-Type": "application/json" },
-          }
-        )
-        .then((res) => {
-          toast.success(res.data.message);
-          setIsAuthenticated(true);
-          navigateTo("/");
-          setEmail("");
-          setPassword("");
-          setConfirmPassword("");
-        });
+      const res = await axios.post(
+        "https://medicare-r4rk.onrender.com/api/v1/user/login",
+        { email, password, confirmPassword, role: "Patient" },
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      // Success handling
+      toast.success(res.data.message);
+      setIsAuthenticated(true);
+      navigateTo("/");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
     } catch (error) {
-      toast.error(error.response.data.message);
+      // Error handling
+      // Sometimes error.response might be undefined, so safer to use optional chaining
+      toast.error(error.response?.data?.message || "Login failed");
     }
   };
 

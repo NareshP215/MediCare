@@ -37,7 +37,7 @@ const AppointmentForm = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       const { data } = await axios.get(
-        "http://localhost:4000/api/v1/user/docters",
+        "https://medicare-r4rk.onrender.com/api/v1/user/docters",
         { withCredentials: true }
       );
       setDoctors(data.docters);
@@ -50,7 +50,7 @@ const AppointmentForm = () => {
     try {
       const hasVisitedBool = Boolean(hasVisited);
       const { data } = await axios.post(
-        "http://localhost:4000/api/v1/appointment/post",
+        "https://medicare-r4rk.onrender.com/api/v1/appointment/post",
         {
           firstName,
           lastName,

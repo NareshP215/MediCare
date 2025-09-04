@@ -3,12 +3,14 @@ import numpy as np
 import pandas as pd
 import pickle
 from flask_cors import CORS
-import serial, time
+import serial, time, os
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# ------------------ SYMPTOMS & DISEASES ------------------
 symptoms_dict = {
     "itching": 0,
     "skin_rash": 1,
@@ -23,7 +25,7 @@ symptoms_dict = {
     "muscle_wasting": 10,
     "vomiting": 11,
     "burning_micturition": 12,
-    "spotting_ urination": 13,
+    "spotting_urination": 13,
     "fatigue": 14,
     "weight_gain": 15,
     "anxiety": 16,
@@ -100,11 +102,11 @@ symptoms_dict = {
     "weakness_of_one_body_side": 87,
     "loss_of_smell": 88,
     "bladder_discomfort": 89,
-    "foul_smell_of urine": 90,
+    "foul_smell_of_urine": 90,
     "continuous_feel_of_urine": 91,
     "passage_of_gases": 92,
     "internal_itching": 93,
-    "toxic_look_(typhos)": 94,
+    "toxic_look_typhos": 94,
     "depression": 95,
     "irritability": 96,
     "muscle_pain": 97,
@@ -112,7 +114,7 @@ symptoms_dict = {
     "red_spots_over_body": 99,
     "belly_pain": 100,
     "abnormal_menstruation": 101,
-    "dischromic _patches": 102,
+    "dischromic_patches": 102,
     "watering_from_eyes": 103,
     "increased_appetite": 104,
     "polyuria": 105,
@@ -127,7 +129,7 @@ symptoms_dict = {
     "stomach_bleeding": 114,
     "distention_of_abdomen": 115,
     "history_of_alcohol_consumption": 116,
-    "fluid_overload.1": 117,
+    "fluid_overload_1": 117,
     "blood_in_sputum": 118,
     "prominent_veins_on_calf": 119,
     "palpitations": 120,
@@ -143,6 +145,7 @@ symptoms_dict = {
     "red_sore_around_nose": 130,
     "yellow_crust_ooze": 131,
 }
+
 diseases_list = {
     15: "Fungal infection",
     4: "Allergy",
@@ -151,10 +154,10 @@ diseases_list = {
     14: "Drug Reaction",
     33: "Peptic ulcer diseae",
     1: "AIDS",
-    12: "Diabetes ",
+    12: "Diabetes",
     17: "Gastroenteritis",
     6: "Bronchial Asthma",
-    23: "Hypertension ",
+    23: "Hypertension",
     30: "Migraine",
     7: "Cervical spondylosis",
     32: "Paralysis (brain hemorrhage)",
@@ -187,18 +190,17 @@ diseases_list = {
     27: "Impetigo",
 }
 
-# Load datasets
-sym_des = pd.read_csv("datasets/symtoms_df.csv")
-precautions = pd.read_csv("datasets/precautions_df.csv")
-workout = pd.read_csv("datasets/workout_df.csv")
-description = pd.read_csv("datasets/description.csv")
-medications = pd.read_csv("datasets/medications copy.csv")
-diets = pd.read_csv("datasets/diets copy.csv")
-
-# Load model
-svc = pickle.load(open("svc2.pkl", "rb"))
+# ------------------ LOAD DATA & MODEL ------------------
+sym_des = pd.read_csv(os.path.join(BASE_DIR, "datasets/symtoms_df.csv"))
+precautions = pd.read_csv(os.path.join(BASE_DIR, "datasets/precautions_df.csv"))
+workout = pd.read_csv(os.path.join(BASE_DIR, "datasets/workout_df.csv"))
+description = pd.read_csv(os.path.join(BASE_DIR, "datasets/description.csv"))
+medications = pd.read_csv(os.path.join(BASE_DIR, "datasets/medications copy.csv"))
+diets = pd.read_csv(os.path.join(BASE_DIR, "datasets/diets copy.csv"))
+svc = pickle.load(open(os.path.join(BASE_DIR, "svc.pkl"), "rb"))
 
 
+# ------------------ HELPER FUNCTIONS ------------------
 def get_predicted_value(patient_symptoms):
     input_vector = np.zeros(len(symptoms_dict))
     for symptom in patient_symptoms:
@@ -232,12 +234,12 @@ def helper(disease):
     return desc, pre, meds, diets_list, wrkout
 
 
+# ------------------ API ENDPOINTS ------------------
 @app.route("/predict-json", methods=["POST"])
 def predict_json():
     data = request.get_json()
     symptoms_input = data.get("symptoms", "")
 
-    # Convert string input into list of symptoms
     user_symptoms = [
         s.strip("[]' ").lower().replace(" ", "_")
         for s in symptoms_input.split(",")
@@ -263,29 +265,30 @@ def predict_json():
 
 @app.route("/measure-ecg", methods=["POST"])
 def measure_ecg():
-    PORT = "COM5"
-    BAUD = 9600
-    DURATION = 10
+    # Cloud-safe ECG: mock data if deployed
+    if os.environ.get("CLOUD_DEPLOY") == "1":
+        ecg_values = [70 + i % 10 for i in range(100)]
+    else:
+        PORT = "COM5"
+        BAUD = 9600
+        DURATION = 10
 
-    ser = serial.Serial(PORT, BAUD, timeout=1)
-    time.sleep(2)
+        ser = serial.Serial(PORT, BAUD, timeout=1)
+        time.sleep(2)
+        ecg_values = []
+        start_time = time.time()
 
-    ecg_values = []
-    start_time = time.time()
-
-    while (time.time() - start_time) < DURATION:
-        line = ser.readline().decode("utf-8").strip()
-        if line.isdigit():
-            ecg_values.append(int(line))
-
-    ser.close()
+        while (time.time() - start_time) < DURATION:
+            line = ser.readline().decode("utf-8").strip()
+            if line.isdigit():
+                ecg_values.append(int(line))
+        ser.close()
 
     if not ecg_values:
         return jsonify({"error": "No ECG data received"}), 400
 
     avg_val = sum(ecg_values) // len(ecg_values)
-    bpm = 60 * (len([v for v in ecg_values if v > avg_val + 100])) // DURATION
-
+    bpm = 60 * (len([v for v in ecg_values if v > avg_val + 100])) // 10
     status = "Normal"
     if bpm < 60:
         status = "Low Heart Rate"
@@ -303,5 +306,12 @@ def measure_ecg():
     )
 
 
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok"})
+
+
+# ------------------ RUN APP ------------------
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

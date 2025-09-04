@@ -16,7 +16,7 @@ const Dashboard = () => {
     const fetchAppointments = async () => {
       try {
         const { data } = await axios.get(
-          "http://localhost:4000/api/v1/appointment/getall",
+          "https://medicare-r4rk.onrender.com/api/v1/appointment/getall",
           { withCredentials: true }
         );
         setAppointments(data.appointments);
@@ -32,7 +32,7 @@ const Dashboard = () => {
     const fetchDoctors = async () => {
       try {
         const { data } = await axios.get(
-          "http://localhost:4000/api/v1/user/docters",
+          "https://medicare-r4rk.onrender.com/api/v1/user/docters",
           { withCredentials: true }
         );
         setDoctors(data.docters);
@@ -47,7 +47,7 @@ const Dashboard = () => {
   const handleUpdateStatus = async (appointmentId, status) => {
     try {
       const { data } = await axios.put(
-        `http://localhost:4000/api/v1/appointment/update/${appointmentId}`,
+        `https://medicare-r4rk.onrender.com/api/v1/appointment/update/${appointmentId}`,
         { status },
         { withCredentials: true }
       );
@@ -125,8 +125,8 @@ const Dashboard = () => {
                             appointments.status === "Pending"
                               ? "value-pending"
                               : appointments.status === "Accepted"
-                                ? "value-accepted"
-                                : "value-rejected"
+                              ? "value-accepted"
+                              : "value-rejected"
                           }
                           value={appointments.status}
                           onChange={(e) =>
@@ -164,7 +164,6 @@ const Dashboard = () => {
             </tbody>
           </table>
         </div>
-
       </section>
     </>
   );

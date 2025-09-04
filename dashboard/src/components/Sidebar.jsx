@@ -45,18 +45,22 @@ const Sidebar = () => {
   };
 
   const handleLogout = async () => {
-    await axios
-      .get("http://localhost:4000/api/v1/user/admin/logout", {
-        withCredentials: true,
-      })
-      .then((res) => {
-        toast.success(res.data.message);
-        setIsAuthenticated(false);
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message);
-      });
+    try {
+      const { data } = await axios.get(
+        "https://medicare-r4rk.onrender.com/api/v1/user/admin/logout",
+        { withCredentials: true }
+      );
+
+      toast.success(data.message);
+
+      setIsAuthenticated(false);
+
+      navigateTo("/login");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Logout failed");
+    }
   };
+
   return (
     <>
       <nav

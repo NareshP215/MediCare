@@ -1,3 +1,4 @@
 config.env
 node_modules/
 .vscode/git remote add origin
+Speaker Notes.txt
